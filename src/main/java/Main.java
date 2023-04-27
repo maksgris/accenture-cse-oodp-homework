@@ -1,7 +1,10 @@
-import creational.carshop.Car;
-import creational.carshop.CarBrand;
-import creational.carshop.CarModel;
-import creational.carshop.carfactory.AbstractCarFactory;
+import carservice.carrange.CarRangeCalculator;
+import carservice.carrange.CarRangeMilesAdapter;
+import carservice.carrange.CarRangeMilesCounter;
+import carshop.Car;
+import carshop.carmodel.CarBrand;
+import carshop.carmodel.CarModel;
+import carshop.carfactory.AbstractCarFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,15 +12,15 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        /**
-         * 1. creational task
-         */
-
+        // 1. Creational Results
         printCreationalResults();
 
+        // 2. Structural Results
+        printStructuralResults();
     }
 
     private static void printCreationalResults() {
+
         final AbstractCarFactory teslaFactory = AbstractCarFactory.getCarFactory(CarBrand.TESLA);
         final AbstractCarFactory bmwFactory = AbstractCarFactory.getCarFactory(CarBrand.BMW);
         final AbstractCarFactory toyotaFactory = AbstractCarFactory.getCarFactory(CarBrand.TOYOTA);
@@ -43,5 +46,19 @@ public class Main {
         for (Car car: carShopList) {
             System.out.println(car.getCarInfo());
         }
+    }
+
+    private static void printStructuralResults() {
+
+        final AbstractCarFactory teslaFactory = AbstractCarFactory.getCarFactory(CarBrand.TESLA);
+        final Car teslaModelS = teslaFactory.makeCar(CarModel.MODEL_S);
+
+        final CarRangeMilesCounter carRangeMilesCounter = new CarRangeMilesCounter(teslaModelS.getCarRange());
+        final CarRangeCalculator carRangeAdapter = new CarRangeMilesAdapter(carRangeMilesCounter);
+
+        System.out.printf("%s's range in miles is %,.1f mi and in kilometers is %,.1f km%n",
+                teslaModelS.getCarModel(),
+                carRangeAdapter.getCarRangeInKm(),
+                carRangeAdapter.getCarRangeInMi());
     }
 }
