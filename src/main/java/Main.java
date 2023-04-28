@@ -1,10 +1,20 @@
-import carservice.carrange.CarRangeCalculator;
-import carservice.carrange.CarRangeMilesAdapter;
-import carservice.carrange.CarRangeMilesCounter;
-import carshop.Car;
-import carshop.carmodel.CarBrand;
-import carshop.carmodel.CarModel;
-import carshop.carfactory.AbstractCarFactory;
+import carautopilot.Autopilot;
+import carautopilot.AutopilotCar;
+import carautopilot.controliterator.ControlList;
+import carautopilot.controliterator.Controls;
+import carautopilot.controliterator.Iterator;
+import carautopilot.controls.*;
+import carproduction.carfactory.AbstractCarFactory;
+import carproduction.carmodel.Car;
+import carproduction.carmodel.CarBrand;
+import carproduction.carmodel.CarModel;
+import carservice.caranalyze.CarRangeCalculator;
+import carservice.caranalyze.CarRangeMilesAdapter;
+import carservice.caranalyze.CarRangeMilesCounter;
+import carservice.carupkeep.CarMaintenance;
+import carservice.carupkeep.CarMaintenanceProvider;
+import carservice.carupkeep.carservices.PreventiveMaintenance;
+import carservice.carupkeep.carservices.RepairService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +22,14 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-        // 1. Creational Results
+        /*// 1. Creational Results
         printCreationalResults();
 
         // 2. Structural Results
-        printStructuralResults();
+        printStructuralResults();*/
+
+        // 3. Behavioral Results
+        printBehavioralResults();
     }
 
     private static void printCreationalResults() {
@@ -43,6 +56,7 @@ public class Main {
         carShopList.add(audiQ8);
         carShopList.add(audiSQ5);
 
+        System.out.printf("%n--Abstract factory example--%n");
         for (Car car: carShopList) {
             System.out.println(car.getCarInfo());
         }
@@ -56,9 +70,38 @@ public class Main {
         final CarRangeMilesCounter carRangeMilesCounter = new CarRangeMilesCounter(teslaModelS.getCarRange());
         final CarRangeCalculator carRangeAdapter = new CarRangeMilesAdapter(carRangeMilesCounter);
 
-        System.out.printf("%s's range in miles is %,.1f mi and in kilometers is %,.1f km%n",
+        System.out.printf("--Adapter example--%n%s's range in miles is %,.1f mi and in kilometers is %,.1f km%n",
                 teslaModelS.getCarModel(),
                 carRangeAdapter.getCarRangeInKm(),
                 carRangeAdapter.getCarRangeInMi());
+
+        System.out.printf("%n--Decorator example--%n");
+        CarMaintenance newServiceProvider = new CarMaintenanceProvider();
+        newServiceProvider = new PreventiveMaintenance(newServiceProvider);
+        newServiceProvider = new RepairService(newServiceProvider);
+        System.out.println(newServiceProvider.availableServices());
+    }
+
+    private static void printBehavioralResults() {
+
+        Autopilot autopilotCar = new AutopilotCar();
+        AutopilotControl turnCarRight = new AutopilotControl(new TurnCarRight(autopilotCar), null);
+        AutopilotControl turnCarLeft = new AutopilotControl(new TurnCarLeft(autopilotCar), null);
+        AutopilotControl speedUpCar = new AutopilotControl(null, new SpeedUpCar(autopilotCar));
+        AutopilotControl slowDownCar = new AutopilotControl(null, new SlowDownCar(autopilotCar));
+
+        ControlList controlList = new ControlList();
+        Iterator iterator = controlList.getIterator();
+
+        System.out.printf("%n--Chain of Responsibility using Iterator example--%n");
+        while (iterator.hasNext()) {
+            Controls command = (Controls) iterator.next();
+            switch (command) {
+                case RIGHT: turnCarRight.changeDirection();
+                case LEFT: turnCarLeft.changeDirection();
+                case SPEED_UP: speedUpCar.changeSpeed();
+                case SLOW_DOWN: slowDownCar.changeSpeed();
+            }
+        }
     }
 }
